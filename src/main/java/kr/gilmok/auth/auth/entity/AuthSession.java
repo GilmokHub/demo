@@ -2,7 +2,7 @@ package kr.gilmok.auth.auth.entity;
 
 import jakarta.persistence.*;
 import kr.gilmok.auth.auth.exception.AuthErrorCode;
-import kr.gilmok.common.exception.CustomException;
+import kr.gilmok.auth.global.exception.CustomException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

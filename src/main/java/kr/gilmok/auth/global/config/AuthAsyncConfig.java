@@ -1,7 +1,7 @@
 package kr.gilmok.auth.global.config;
 
 import kr.gilmok.auth.auth.exception.AuthErrorCode;
-import kr.gilmok.common.exception.CustomException;
+import kr.gilmok.auth.global.exception.CustomException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
