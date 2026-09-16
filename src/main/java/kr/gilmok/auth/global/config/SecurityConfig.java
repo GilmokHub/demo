@@ -1,10 +1,10 @@
 package kr.gilmok.auth.global.config;
 
 import jakarta.servlet.Filter;
-import kr.gilmok.common.filter.JwtAuthenticationFilter;
-import kr.gilmok.common.security.AccessTokenBlocklistFilter;
-import kr.gilmok.common.security.CommonSecurityConfig;
-import kr.gilmok.common.security.CustomAuthenticationEntryPoint;
+import kr.gilmok.auth.global.security.AccessTokenBlocklistFilter;
+import kr.gilmok.auth.global.security.CommonSecurityConfig;
+import kr.gilmok.auth.global.security.CustomAuthenticationEntryPoint;
+import kr.gilmok.auth.global.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

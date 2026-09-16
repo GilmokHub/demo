@@ -2,8 +2,8 @@ package kr.gilmok.auth.auth.service;
 
 import kr.gilmok.auth.auth.entity.User;
 import kr.gilmok.auth.auth.repository.UserRepository;
-import kr.gilmok.common.dto.AuthUserDto;
-import kr.gilmok.common.security.CustomUserDetails;
+import kr.gilmok.auth.global.dto.AuthUserDto;
+import kr.gilmok.auth.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;

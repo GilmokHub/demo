@@ -7,7 +7,7 @@ import kr.gilmok.auth.auth.exception.AuthErrorCode;
 import kr.gilmok.auth.auth.repository.AuthSessionRepository;
 import kr.gilmok.auth.global.jwt.TokenProvider;
 import kr.gilmok.auth.global.util.TokenHashEncoder;
-import kr.gilmok.common.exception.CustomException;
+import kr.gilmok.auth.global.exception.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

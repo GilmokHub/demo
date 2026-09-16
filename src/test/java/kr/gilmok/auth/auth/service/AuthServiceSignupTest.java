@@ -4,7 +4,7 @@ import kr.gilmok.auth.auth.dto.SignupRequest;
 import kr.gilmok.auth.auth.entity.User;
 import kr.gilmok.auth.auth.exception.AuthErrorCode;
 import kr.gilmok.auth.auth.repository.UserRepository;
-import kr.gilmok.common.exception.CustomException;
+import kr.gilmok.auth.global.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
