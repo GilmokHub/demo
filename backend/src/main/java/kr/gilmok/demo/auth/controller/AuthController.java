@@ -1,0 +1,158 @@
+package kr.gilmok.demo.auth.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import kr.gilmok.demo.auth.dto.AuthTokenDto;
+import kr.gilmok.demo.auth.dto.LoginRequest;
+import kr.gilmok.demo.auth.dto.LoginResponse;
+import kr.gilmok.demo.auth.dto.SignupRequest;
+import kr.gilmok.demo.auth.exception.AuthErrorCode;
+import kr.gilmok.demo.auth.service.AuthService;
+import kr.gilmok.demo.global.dto.ApiResponse;
+import kr.gilmok.demo.global.exception.CustomException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.Callable;
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+@Tag(name = "Auth", description = "인증 API (회원가입, 로그인, 토큰 재발급)")
+public class AuthController {
+
+    private final AuthService authService;
+
+    @Value("${app.jwt.access-expiration-ms}")
+    private long accessExpTime;
+
+    @Value("${app.jwt.refresh-expiration-ms}")
+    private long refreshExpTime;
+
+    @PostMapping("/signup")
+    @Operation(summary = "회원가입", description = "새 계정을 생성합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "가입 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "요청 값 검증 실패 또는 중복 아이디")
+    })
+    public Callable<ResponseEntity<ApiResponse<String>>> signup(@Validated @RequestBody SignupRequest request) {
+        return () -> {
+            authService.signup(request);
+
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("회원가입 완료"));
+        };
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "로그인", description = "아이디/비밀번호로 로그인하고 access·refresh 토큰을 쿠키로 발급합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "요청 값 검증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "아이디/비밀번호 불일치")
+    })
+    public Callable<ResponseEntity<ApiResponse<LoginResponse>>> login(@Validated @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        String ip = httpRequest.getRemoteAddr();
+        String userAgent = normalizeUserAgent(httpRequest.getHeader("User-Agent"));
+
+        return () -> {
+            AuthTokenDto tokenDto = authService.login(request, ip, userAgent);
+
+            addTokenCookies(httpResponse, tokenDto);
+
+            return ResponseEntity.ok(ApiResponse.success(toLoginResponse(tokenDto)));
+        };
+    }
+
+    @PostMapping("/reissue")
+    @Operation(summary = "토큰 재발급", description = "refreshToken 쿠키로 access·refresh 토큰을 재발급합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "재발급 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "refreshToken 없음 또는 만료/무효")
+    })
+    public ResponseEntity<ApiResponse<LoginResponse>> reissue(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new CustomException(AuthErrorCode.NO_REFRESH_TOKEN);
+        }
+
+        String ip = httpRequest.getRemoteAddr();
+        String userAgent = normalizeUserAgent(httpRequest.getHeader("User-Agent"));
+
+        AuthTokenDto tokenDto = authService.reissue(refreshToken, ip, userAgent);
+
+        addTokenCookies(httpResponse, tokenDto);
+
+        return ResponseEntity.ok(ApiResponse.success(toLoginResponse(tokenDto)));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(
+            @CookieValue(value = "accessToken", required = false) String accessToken,
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse httpResponse) {
+        authService.logout(accessToken, refreshToken);
+
+        // 쿠키 즉시 만료
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, expireCookie("accessToken").toString());
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, expireCookie("refreshToken").toString());
+
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 완료"));
+    }
+
+    private void addTokenCookies(HttpServletResponse response, AuthTokenDto tokenDto) {
+        ResponseCookie accessTokenCookie = createTokenCookie("accessToken", tokenDto.accessToken(),
+                accessExpTime);
+        ResponseCookie refreshTokenCookie = createTokenCookie("refreshToken", tokenDto.refreshToken(),
+                refreshExpTime);
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+    }
+
+    private ResponseCookie createTokenCookie(String name, String value, long expTime) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(expTime / 1000)
+                .sameSite("Lax")
+                .build();
+    }
+
+    private ResponseCookie expireCookie(String name) {
+        return ResponseCookie.from(name, "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+    }
+
+    private String normalizeUserAgent(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) {
+            return "Unknown";
+        }
+        return userAgent;
+    }
+
+    private LoginResponse toLoginResponse(AuthTokenDto tokenDto) {
+        return new LoginResponse(
+                tokenDto.accessTokenExpiresIn(),
+                tokenDto.username(),
+                tokenDto.role());
+    }
+}
