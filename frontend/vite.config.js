@@ -1,5 +1,9 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '')
@@ -15,8 +19,19 @@ export default defineConfig(({ mode }) => {
         bypass: bypassHtml,
     }
 
+    // 플랫폼(platform) 대기열 백엔드 - 포트 8082
+    const queueProxy = {
+        target: env.VITE_QUEUE_SERVER_URL || 'http://localhost:8082',
+        changeOrigin: true,
+    }
+
     return {
         plugins: [react()],
+        resolve: {
+            alias: {
+                '@gilmok/sdk': path.resolve(__dirname, '../../platform/sdk/src'),
+            },
+        },
         server: {
             port: 3030,
             proxy: {
@@ -26,8 +41,8 @@ export default defineConfig(({ mode }) => {
                 '/users': backendProxy,
                 '/events': backendProxy,
                 '/reservations': backendProxy,
+                '/api/v1/queue': queueProxy,
                 '/api': backendProxy,
-                // /queue 경로는 SDK에서 직접 8082로 통신하므로 프록시에서 제거
             },
         },
     }

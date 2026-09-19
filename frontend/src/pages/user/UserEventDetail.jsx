@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../../api/client'
+import { useGilmokQueue, GilmokWaitingModal } from '@gilmok/sdk'
 
 function formatPeriod(startsAt, endsAt) {
   if (!startsAt && !endsAt) return null
@@ -17,6 +18,15 @@ export default function UserEventDetail() {
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // 길목 대기열 SDK 연동
+  const { isWaiting, queueStatus, enterQueue } = useGilmokQueue({
+    clientKey: 'demo-client',
+    onAdmitted: ({ token, queueKey }) => {
+      // 평상시(0초) 또는 대기열 순번 완료 시 좌석 선택 페이지로 이동
+      navigate(`/events/${eventId}/seats`, { state: { token, queueKey } })
+    }
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -52,7 +62,7 @@ export default function UserEventDetail() {
 
   const handleEnterQueue = () => {
     if (!eventId || event?.status !== 'OPEN') return
-    navigate(`/events/${eventId}/queue`)
+    enterQueue(eventId)
   }
 
   if (loading) {
@@ -105,15 +115,18 @@ export default function UserEventDetail() {
           <button
             className="btn btn-primary btn-lg"
             onClick={handleEnterQueue}
-            disabled={!eventId || event.status !== 'OPEN'}
+            disabled={!eventId || event.status !== 'OPEN' || isWaiting}
           >
-            예약하기
+            {isWaiting ? '대기열 진입 중...' : '예약하기'}
           </button>
           {event.status !== 'OPEN' && (
             <p className="text-muted small mt-2 mb-0">예매 가능 상태(OPEN)일 때만 입장할 수 있습니다.</p>
           )}
         </div>
       </div>
+
+      {/* 길목 대기열 모달 (트래픽 집중 시 자동 팝업) */}
+      <GilmokWaitingModal isWaiting={isWaiting} queueStatus={queueStatus} />
     </>
   )
 }
