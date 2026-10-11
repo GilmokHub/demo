@@ -25,8 +25,9 @@ public class AdmissionTokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // CORS 프리플라이트 요청은 통과
-        if (HttpMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
+        // CORS 프리플라이트 및 GET 조회 요청은 토큰 검증 바이패스
+        if (HttpMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())
+                || HttpMethod.GET.name().equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
