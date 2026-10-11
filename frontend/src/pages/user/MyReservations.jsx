@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../api/client'
+import { getMyReservations, cancelReservation } from '../../api/reservations'
 
 const statusLabel = {
   HOLDING: '선점 중',
@@ -18,8 +18,7 @@ export default function MyReservations() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api
-      .get('/reservations/my')
+    getMyReservations()
       .then((data) => setReservations(Array.isArray(data) ? data : []))
       .catch(() => setReservations([]))
       .finally(() => setLoading(false))
@@ -28,8 +27,7 @@ export default function MyReservations() {
   const handleCancel = (code) => {
     if (!confirm('예약을 취소하시겠습니까?')) return
 
-    api
-      .delete(`/reservations/${code}`)
+    cancelReservation(code)
       .then((updated) => {
         if (updated) {
           setReservations((prev) =>
