@@ -1,23 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { api } from '../../api/client'
+import { getEventSeats } from '../../api/events'
+import { createReservation } from '../../api/reservations'
 import SeatMap from '../../components/reservation/SeatMap'
 
 export default function SeatSelection() {
   const { eventId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const queueKey = location.state?.queueKey || sessionStorage.getItem(`queueKey_${eventId}`)
-  const admissionToken = location.state?.token || sessionStorage.getItem(`admissionToken_${eventId}`)
+  const admissionToken = location.state?.admissionToken || sessionStorage.getItem(`admissionToken_${eventId}`)
 
   useEffect(() => {
-    if (location.state?.token) {
-      sessionStorage.setItem(`admissionToken_${eventId}`, location.state.token)
+    if (location.state?.admissionToken) {
+      sessionStorage.setItem(`admissionToken_${eventId}`, location.state.admissionToken)
     }
-    if (location.state?.queueKey) {
-      sessionStorage.setItem(`queueKey_${eventId}`, location.state.queueKey)
-    }
-  }, [eventId, location.state?.token, location.state?.queueKey])
+  }, [eventId, location.state?.admissionToken])
 
   const [seats, setSeats] = useState([])
   const [selectedSeat, setSelectedSeat] = useState(null)
@@ -27,30 +24,25 @@ export default function SeatSelection() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    api.get(`/events/${eventId}/seats`)
+    getEventSeats(eventId)
       .then((data) => setSeats(data || []))
       .catch(() => setError('좌석 정보를 불러올 수 없습니다.'))
       .finally(() => setLoading(false))
   }, [eventId])
 
   const handleReserve = () => {
-    if (!selectedSeat || !queueKey) return
+    if (!selectedSeat) return
     setSubmitting(true)
     setError(null)
 
-    api.post('/reservations', {
+    createReservation({
       eventId: Number(eventId),
       seatId: selectedSeat.seatId,
       quantity,
-      queueKey,
-    }, {
-      headers: {
-        'X-Admission-Token': admissionToken ? `Bearer ${admissionToken}` : '',
-      },
-    })
+    }, admissionToken)
       .then((d) => {
         navigate(`/events/${eventId}/reserve/confirm`, {
-          state: { reservation: d, token: admissionToken },
+          state: { reservation: d, admissionToken },
         })
       })
       .catch((err) => setError(err.message || '예약 요청 중 오류가 발생했습니다.'))

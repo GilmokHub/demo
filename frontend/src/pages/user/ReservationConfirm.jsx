@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { api } from '../../api/client'
+import { confirmReservation, cancelReservation } from '../../api/reservations'
 
 const DEFAULT_HOLD_SECONDS = 300
 
@@ -9,11 +9,10 @@ export default function ReservationConfirm() {
   const navigate = useNavigate()
   const location = useLocation()
   const reservation = location.state?.reservation
-  const admissionToken = location.state?.token || sessionStorage.getItem(`admissionToken_${eventId}`)
+  const admissionToken = location.state?.admissionToken || sessionStorage.getItem(`admissionToken_${eventId}`)
 
   const cleanupSessionToken = () => {
     sessionStorage.removeItem(`admissionToken_${eventId}`)
-    sessionStorage.removeItem(`queueKey_${eventId}`)
   }
 
   const calcRemaining = () => {
@@ -58,11 +57,7 @@ export default function ReservationConfirm() {
     setConfirming(true)
     setError(null)
 
-    const headers = {
-      'X-Admission-Token': admissionToken ? `Bearer ${admissionToken}` : '',
-    }
-
-    api.post(`/reservations/${reservation.reservationCode}/confirm`, undefined, { headers })
+    confirmReservation(reservation.reservationCode, admissionToken)
       .then((d) => {
         cleanupSessionToken()
         navigate(`/reservations/${reservation.reservationCode}`, {
@@ -80,11 +75,7 @@ export default function ReservationConfirm() {
   }
 
   const handleCancel = () => {
-    const headers = {
-      'X-Admission-Token': admissionToken ? `Bearer ${admissionToken}` : '',
-    }
-
-    api.delete(`/reservations/${reservation.reservationCode}`, { headers })
+    cancelReservation(reservation.reservationCode, admissionToken)
       .then(() => {
         cleanupSessionToken()
         navigate(`/events/${eventId}/seats`)
