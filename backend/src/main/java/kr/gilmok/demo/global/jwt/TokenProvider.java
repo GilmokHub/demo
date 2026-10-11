@@ -1,6 +1,6 @@
 package kr.gilmok.demo.global.jwt;
 
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 
 public interface TokenProvider {
     String createAccessToken(User user);

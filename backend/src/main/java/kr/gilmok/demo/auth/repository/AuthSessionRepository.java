@@ -2,7 +2,7 @@ package kr.gilmok.demo.auth.repository;
 
 import jakarta.persistence.LockModeType;
 import kr.gilmok.demo.auth.entity.AuthSession;
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;

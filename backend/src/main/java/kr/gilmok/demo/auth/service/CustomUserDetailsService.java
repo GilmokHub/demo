@@ -1,7 +1,7 @@
 package kr.gilmok.demo.auth.service;
 
-import kr.gilmok.demo.auth.entity.User;
-import kr.gilmok.demo.auth.repository.UserRepository;
+import kr.gilmok.demo.user.entity.User;
+import kr.gilmok.demo.user.repository.UserRepository;
 import kr.gilmok.demo.global.dto.AuthUserDto;
 import kr.gilmok.demo.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;

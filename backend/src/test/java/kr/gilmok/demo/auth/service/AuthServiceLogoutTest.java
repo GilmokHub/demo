@@ -3,7 +3,7 @@ package kr.gilmok.demo.auth.service;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import kr.gilmok.demo.auth.entity.AuthSession;
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 import kr.gilmok.demo.auth.repository.AuthSessionRepository;
 import kr.gilmok.demo.global.jwt.JwtProvider;
 import kr.gilmok.demo.global.jwt.TokenProvider;
