@@ -31,8 +31,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByEventIdOrderByCreatedAtDesc(Long eventId);
 
-    List<Reservation> findByStatusAndCreatedAtBefore(ReservationStatus status, LocalDateTime cutoff);
-
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.event.id = :eventId AND r.status = :status")
     long countByEventIdAndStatus(@Param("eventId") Long eventId, @Param("status") ReservationStatus status);
 

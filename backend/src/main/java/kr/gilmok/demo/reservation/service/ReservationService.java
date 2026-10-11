@@ -40,18 +40,12 @@ public class ReservationService {
     @Value("${reservation.max-quantity:4}")
     private int maxQuantity;
 
-    @Value("${app.jwt.secret}")
-    private String secretKey;
-
     @Transactional
     public ReservationResponse createReservation(Long userId, String username, ReservationCreateRequest request) {
         // 수량 검증
         if (request.quantity() < 1 || request.quantity() > maxQuantity) {
             throw new CustomException(ReservationErrorCode.INVALID_QUANTITY);
         }
-
-        // 대기열 통과(ADMITTABLE) 검증
-        String eventIdStr = String.valueOf(request.eventId());
 
         // 이벤트 확인
         Event event = eventRepository.findById(request.eventId())

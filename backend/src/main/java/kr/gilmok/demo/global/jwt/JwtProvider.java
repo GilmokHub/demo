@@ -52,12 +52,14 @@ public class JwtProvider implements TokenProvider {
     }
 
     // access token에만 jti가 존재하며, logout 시 blocklist 등록에 사용됨
+    @Override
     public String getJti(String token) {
         return parseClaims(token).getId();
     }
 
     // 토큰의 남은 유효시간(밀리초)을 반환함
     // blocklist TTL 설정에 사용됨
+    @Override
     public long getRemainingTtlMs(String token) {
         Date expiration = parseClaims(token).getExpiration();
         long remaining = expiration.getTime() - System.currentTimeMillis();
