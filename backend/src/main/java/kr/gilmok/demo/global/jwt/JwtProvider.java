@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

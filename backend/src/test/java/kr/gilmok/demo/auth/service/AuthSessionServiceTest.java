@@ -1,7 +1,7 @@
 package kr.gilmok.demo.auth.service;
 
 import kr.gilmok.demo.auth.entity.AuthSession;
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 import kr.gilmok.demo.auth.repository.AuthSessionRepository;
 import kr.gilmok.demo.global.util.TokenHashEncoder;
 import org.junit.jupiter.api.BeforeEach;

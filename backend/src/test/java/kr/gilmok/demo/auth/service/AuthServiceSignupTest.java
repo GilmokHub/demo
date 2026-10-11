@@ -1,9 +1,9 @@
 package kr.gilmok.demo.auth.service;
 
 import kr.gilmok.demo.auth.dto.SignupRequest;
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 import kr.gilmok.demo.auth.exception.AuthErrorCode;
-import kr.gilmok.demo.auth.repository.UserRepository;
+import kr.gilmok.demo.user.repository.UserRepository;
 import kr.gilmok.demo.global.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

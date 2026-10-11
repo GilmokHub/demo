@@ -2,7 +2,7 @@ package kr.gilmok.demo.auth.service;
 
 import kr.gilmok.demo.auth.dto.AuthTokenDto;
 import kr.gilmok.demo.auth.entity.AuthSession;
-import kr.gilmok.demo.auth.entity.User;
+import kr.gilmok.demo.user.entity.User;
 import kr.gilmok.demo.auth.exception.AuthErrorCode;
 import kr.gilmok.demo.auth.repository.AuthSessionRepository;
 import kr.gilmok.demo.global.jwt.TokenProvider;
