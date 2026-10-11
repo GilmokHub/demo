@@ -103,4 +103,17 @@ class AdmissionTokenInterceptorTest {
         // then
         assertThat(result).isTrue();
     }
+
+    @Test
+    @DisplayName("GET 조회 요청은 대기열 토큰 없이도 통과")
+    void preHandle_getMethod_returnsTrue() throws Exception {
+        // given
+        request.setMethod("GET");
+
+        // when
+        boolean result = interceptor.preHandle(request, response, new Object());
+
+        // then
+        assertThat(result).isTrue();
+    }
 }
