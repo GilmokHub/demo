@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import kr.gilmok.demo.auth.entity.AuthSession;
 import kr.gilmok.demo.user.entity.User;
 import kr.gilmok.demo.auth.repository.AuthSessionRepository;
-import kr.gilmok.demo.global.jwt.JwtProvider;
 import kr.gilmok.demo.global.jwt.TokenProvider;
 import kr.gilmok.demo.global.util.TokenHashEncoder;
 import kr.gilmok.demo.global.security.AccessTokenBlocklistRepository;
@@ -45,9 +44,6 @@ class AuthServiceLogoutTest {
     private TokenProvider tokenProvider;
 
     @Mock
-    private JwtProvider jwtProvider;
-
-    @Mock
     private TokenHashEncoder tokenHashEncoder;
 
     @Mock
@@ -82,8 +78,8 @@ class AuthServiceLogoutTest {
         given(tokenHashEncoder.encode(refreshToken)).willReturn(hashedRefresh);
         given(authSessionRepository.findByRefreshTokenHashAndActive(hashedRefresh))
                 .willReturn(Optional.of(session));
-        given(jwtProvider.getJti(accessToken)).willReturn(jti);
-        given(jwtProvider.getRemainingTtlMs(accessToken)).willReturn(remainingTtlMs);
+        given(tokenProvider.getJti(accessToken)).willReturn(jti);
+        given(tokenProvider.getRemainingTtlMs(accessToken)).willReturn(remainingTtlMs);
 
         // when
         assertThatCode(() -> authService.logout(accessToken, refreshToken))
@@ -108,8 +104,8 @@ class AuthServiceLogoutTest {
         given(tokenHashEncoder.encode(refreshToken)).willReturn(hashedRefresh);
         given(authSessionRepository.findByRefreshTokenHashAndActive(hashedRefresh))
                 .willReturn(Optional.empty());
-        given(jwtProvider.getJti(accessToken)).willReturn(jti);
-        given(jwtProvider.getRemainingTtlMs(accessToken)).willReturn(remainingTtlMs);
+        given(tokenProvider.getJti(accessToken)).willReturn(jti);
+        given(tokenProvider.getRemainingTtlMs(accessToken)).willReturn(remainingTtlMs);
 
         // when & then: 예외 없이 완료
         assertThatCode(() -> authService.logout(accessToken, refreshToken))
@@ -125,7 +121,7 @@ class AuthServiceLogoutTest {
         String accessToken = "already.expired.token";
         String refreshToken = null;
 
-        given(jwtProvider.getJti(accessToken)).willThrow(new RuntimeException("Token expired"));
+        given(tokenProvider.getJti(accessToken)).willThrow(new RuntimeException("Token expired"));
 
         // when & then
         assertThatCode(() -> authService.logout(accessToken, refreshToken))

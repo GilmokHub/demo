@@ -9,7 +9,6 @@ import kr.gilmok.demo.user.entity.User;
 import kr.gilmok.demo.auth.exception.AuthErrorCode;
 import kr.gilmok.demo.auth.repository.AuthSessionRepository;
 import kr.gilmok.demo.user.repository.UserRepository;
-import kr.gilmok.demo.global.jwt.JwtProvider;
 import kr.gilmok.demo.global.jwt.TokenProvider;
 import kr.gilmok.demo.global.util.TokenHashEncoder;
 import kr.gilmok.demo.global.exception.CustomException;
@@ -45,7 +44,6 @@ public class AuthService {
     private final MeterRegistry meterRegistry;
     private final AccessTokenBlocklistRepository accessTokenBlocklistRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
     private final TokenProvider tokenProvider;
 
     @Value("${app.jwt.access-expiration-ms}")
@@ -164,8 +162,8 @@ public class AuthService {
         // 2. access token jti 블랙리스트 등록
         if (accessToken != null && !accessToken.isBlank()) {
             try {
-                String jti = jwtProvider.getJti(accessToken);
-                long remainingTtlMs = jwtProvider.getRemainingTtlMs(accessToken);
+                String jti = tokenProvider.getJti(accessToken);
+                long remainingTtlMs = tokenProvider.getRemainingTtlMs(accessToken);
 
                 if (jti != null && remainingTtlMs > 0) {
                     accessTokenBlocklistRepository.block(jti, remainingTtlMs);
