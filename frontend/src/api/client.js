@@ -38,7 +38,6 @@ function addRefreshSubscriber(resolve, reject) {
 
 /**
  * 공통 fetch 래퍼 함수
- * - CSRF 토큰 자동 주입
  * - 401 에러 시 토큰 자동 재발급(Reissue) 및 요청 재시도 로직 포함
  */
 async function request(baseUrl, path, options = {}) {
@@ -156,15 +155,9 @@ export const api = {
  * 인증 전용 API 클라이언트
  */
 export const authApi = {
-    get: (path, opts) => request(AUTH_BASE, path, { method: 'GET', ...opts }),
     post: (path, body, opts) => request(AUTH_BASE, path, {
         method: 'POST',
         body: body !== undefined ? JSON.stringify(body) : undefined,
-        ...opts
-    }),
-    put: (path, body, opts) => request(AUTH_BASE, path, {
-        method: 'PUT',
-        body: JSON.stringify(body),
         ...opts
     }),
 }

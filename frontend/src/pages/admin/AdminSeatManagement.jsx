@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { api } from '../../api/client'
+import { getEventSeats, createEventSeat, initEventSeatsRedis } from '../../api/events'
 
 export default function AdminSeatManagement() {
     const { eventId } = useParams()
@@ -16,7 +16,7 @@ export default function AdminSeatManagement() {
 
     const loadSeats = async () => {
         try {
-            const data = await api.get(`/events/${eventId}/seats`)
+            const data = await getEventSeats(eventId)
             setSeats(Array.isArray(data) ? data : [])
         } catch (err) {
             setSeats([])
@@ -44,7 +44,7 @@ export default function AdminSeatManagement() {
         setSubmitting(true)
         setError(null)
         try {
-            await api.post(`/admin/events/${eventId}/seats`, { section, totalCount, price })
+            await createEventSeat(eventId, { section, totalCount, price })
         } catch {
             setError('좌석 추가 요청 중 오류가 발생했습니다.')
             setSubmitting(false)
@@ -52,7 +52,7 @@ export default function AdminSeatManagement() {
         }
 
         try {
-            await api.post(`/admin/events/${eventId}/seats/init-redis`, {})
+            await initEventSeatsRedis(eventId)
         } catch {
             setError('좌석은 추가되었지만 Redis 초기화에 실패했습니다. "Redis 재초기화"를 다시 시도하세요.')
         }
@@ -70,7 +70,7 @@ export default function AdminSeatManagement() {
         setInitRedisLoading(true)
         setError(null)
         try {
-            await api.post(`/admin/events/${eventId}/seats/init-redis`, {})
+            await initEventSeatsRedis(eventId)
         } catch {
             setError('Redis 초기화 요청 중 오류가 발생했습니다.')
             setInitRedisLoading(false)

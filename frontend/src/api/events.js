@@ -28,3 +28,12 @@ export function getOpenEvents() {
 export function getEventSeats(eventId) {
   return api.get(`/events/${eventId}/seats`)
 }
+
+// 관리자 좌석 관리 API
+export function createEventSeat(eventId, body) {
+  return api.post(`/admin/events/${eventId}/seats`, body)
+}
+
+export function initEventSeatsRedis(eventId) {
+  return api.post(`/admin/events/${eventId}/seats/init-redis`, {})
+}

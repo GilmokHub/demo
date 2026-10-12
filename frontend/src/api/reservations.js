@@ -54,3 +54,18 @@ export function getReservation(reservationCode) {
 export function getMyReservations() {
   return api.get('/reservations/my')
 }
+
+/**
+ * 관리자용 이벤트별 예약 목록 조회
+ */
+export function getAdminReservations(eventId) {
+  return api.get(`/admin/events/${eventId}/reservations`)
+}
+
+/**
+ * 관리자용 이벤트별 예약 통계 조회
+ */
+export function getAdminReservationStats(eventId) {
+  return api.get(`/admin/events/${eventId}/reservations/stats`)
+}
+
