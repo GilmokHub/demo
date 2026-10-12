@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { api } from '../../api/client'
+import { getOpenEvents } from '../../api/events'
 import { useGilmokQueue, GilmokWaitingModal } from '@gilmok/sdk'
 
 function formatPeriod(startsAt, endsAt) {
@@ -38,8 +38,7 @@ export default function UserEventDetail() {
     }
     setLoading(true)
     setError(null)
-    api
-      .get('/events')
+    getOpenEvents()
       .then((data) => {
         if (cancelled) return
         const list = Array.isArray(data) ? data : []

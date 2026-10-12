@@ -44,8 +44,6 @@ export default function App() {
           <Route path="seats" element={<AdminSeatManagement />} />
           <Route path="reservations" element={<AdminReservations />} />
         </Route>
-        <Route path="settings" element={<div className="p-4">Settings (준비 중)</div>} />
-        <Route path="profile" element={<div className="p-4">Admin Profile (준비 중)</div>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

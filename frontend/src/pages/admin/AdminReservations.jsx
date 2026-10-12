@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { api } from '../../api/client'
+import { useParams } from 'react-router-dom'
+import { getAdminReservations, getAdminReservationStats } from '../../api/reservations'
 
 const statusLabel = {
   HOLDING: '선점 중',
@@ -22,8 +22,8 @@ export default function AdminReservations() {
 
   const loadReservationsAndStats = () => {
     return Promise.all([
-      api.get(`/admin/events/${eventId}/reservations`),
-      api.get(`/admin/events/${eventId}/reservations/stats`),
+      getAdminReservations(eventId),
+      getAdminReservationStats(eventId),
     ]).then(([resData, statsData]) => {
       setReservations(resData || [])
       setStats(statsData || null)

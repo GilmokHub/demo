@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../api/client'
+import { getOpenEvents } from '../../api/events'
 
 const statusLabel = { OPEN: '예매 가능', DRAFT: '준비 중', CLOSED: '종료' }
 
@@ -16,8 +16,7 @@ export default function EventList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api
-      .get('/events')
+    getOpenEvents()
       .then((data) => {
         // client.js에서 ApiResponse.data를 이미 풀어주기 때문에 data는 바로 배열이어야 함
         setEvents(Array.isArray(data) ? data : [])

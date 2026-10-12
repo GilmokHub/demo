@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { confirmReservation, cancelReservation } from '../../api/reservations'
 
 const DEFAULT_HOLD_SECONDS = 300
@@ -48,7 +48,7 @@ export default function ReservationConfirm() {
   if (!reservation) {
     return (
       <div className="alert alert-warning">
-        예약 정보가 없습니다. <a href={`/events/${eventId}/seats`}>좌석 선택으로 돌아가기</a>
+        예약 정보가 없습니다. <Link to={`/events/${eventId}/seats`}>좌석 선택으로 돌아가기</Link>
       </div>
     )
   }

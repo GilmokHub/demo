@@ -1,9 +1,29 @@
+import { useState, useEffect } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
+import { getReservation } from '../../api/reservations'
 
 export default function ReservationResult() {
   const { code } = useParams()
   const location = useLocation()
-  const reservation = location.state?.reservation
+  const [reservation, setReservation] = useState(location.state?.reservation || null)
+  const [loading, setLoading] = useState(!location.state?.reservation && Boolean(code))
+
+  useEffect(() => {
+    if (!reservation && code) {
+      getReservation(code)
+        .then((data) => setReservation(data))
+        .catch(() => setReservation(null))
+        .finally(() => setLoading(false))
+    }
+  }, [code, reservation])
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border" role="status" />
+      </div>
+    )
+  }
 
   if (!reservation) {
     return (
