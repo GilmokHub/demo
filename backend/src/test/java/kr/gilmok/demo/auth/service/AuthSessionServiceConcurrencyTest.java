@@ -79,9 +79,10 @@ public class AuthSessionServiceConcurrencyTest {
         assertThat(errors).as("스레드 실행 중 예외가 발생했습니다").isEmpty();
 
         User finalUser = userRepository.findById(userId).orElseThrow();
-        List<AuthSession> sessions = authSessionRepository.findAllActiveSessionsByUser(finalUser);
+        java.util.Optional<AuthSession> sessionOpt = authSessionRepository.findByUserId(finalUser.getId());
 
         // 여러 번의 동시 요청에도 불구하고, 활성 세션은 단 1개여야 함
-        assertThat(sessions).hasSize(1);
+        assertThat(sessionOpt).isPresent();
+        assertThat(authSessionRepository.count()).isEqualTo(1);
     }
 }

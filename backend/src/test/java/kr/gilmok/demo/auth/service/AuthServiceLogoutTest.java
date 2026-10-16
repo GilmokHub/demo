@@ -87,8 +87,8 @@ class AuthServiceLogoutTest {
 
         // then
         verify(accessTokenBlocklistRepository).block(jti, remainingTtlMs);
-        // session.getRevokedAt()이 ACTIVE_TIME과 달라졌는지 검증
-        assert session.getRevokedAt().isAfter(AuthSessionRepository.ACTIVE_TIME);
+        // 세션이 revoke 되어 만료되었는지 검증
+        org.assertj.core.api.Assertions.assertThat(session.isExpired(LocalDateTime.now().plusSeconds(1))).isTrue();
     }
 
     @Test
@@ -143,18 +143,10 @@ class AuthServiceLogoutTest {
 
     private AuthSession createSession(User user, String refreshTokenHash, String ip, String userAgent,
                                       LocalDateTime expiresAt) {
-        try {
-            Constructor<AuthSession> constructor = AuthSession.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            AuthSession session = constructor.newInstance();
-            ReflectionTestUtils.setField(session, "user", user);
-            ReflectionTestUtils.setField(session, "refreshTokenHash", refreshTokenHash);
-            ReflectionTestUtils.setField(session, "createdIp", ip);
-            ReflectionTestUtils.setField(session, "userAgent", userAgent);
-            ReflectionTestUtils.setField(session, "expiresAt", expiresAt);
-            return session;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return AuthSession.builder()
+                .user(user)
+                .refreshTokenHash(refreshTokenHash)
+                .expiresAt(expiresAt)
+                .build();
     }
 }

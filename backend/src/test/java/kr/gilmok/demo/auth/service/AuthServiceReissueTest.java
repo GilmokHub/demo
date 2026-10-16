@@ -60,19 +60,11 @@ public class AuthServiceReissueTest {
 
     private AuthSession createSession(User user, String refreshTokenHash, String createdIp, String userAgent,
                                       LocalDateTime expiresAt) {
-        try {
-            Constructor<AuthSession> constructor = AuthSession.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            AuthSession session = constructor.newInstance();
-            ReflectionTestUtils.setField(session, "user", user);
-            ReflectionTestUtils.setField(session, "refreshTokenHash", refreshTokenHash);
-            ReflectionTestUtils.setField(session, "createdIp", createdIp);
-            ReflectionTestUtils.setField(session, "userAgent", userAgent);
-            ReflectionTestUtils.setField(session, "expiresAt", expiresAt);
-            return session;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return AuthSession.builder()
+                .user(user)
+                .refreshTokenHash(refreshTokenHash)
+                .expiresAt(expiresAt)
+                .build();
     }
 
     @Test
@@ -93,7 +85,7 @@ public class AuthServiceReissueTest {
         given(tokenProvider.createRefreshToken(testUser)).willReturn(newRefreshToken);
 
         // when
-        assertThat(validSession.getRevokedAt()).isEqualTo(AuthSessionRepository.ACTIVE_TIME);
+        assertThat(validSession.isExpired(LocalDateTime.now())).isFalse();
 
         AuthTokenDto response = authService.reissue(oldRefreshToken, ip, userAgent);
 
@@ -101,7 +93,7 @@ public class AuthServiceReissueTest {
         assertThat(response.accessToken()).isEqualTo(newAccessToken);
         assertThat(response.refreshToken()).isEqualTo(newRefreshToken);
         assertThat(response.username()).isEqualTo(testUser.getUsername());
-        assertThat(validSession.getRevokedAt()).isAfter(AuthSessionRepository.ACTIVE_TIME); // 기존 세션이 무효화 되었는지 확인
+        assertThat(validSession.isExpired(LocalDateTime.now().plusSeconds(1))).isTrue(); // 기존 세션이 무효화(만료) 되었는지 확인
 
         verify(authSessionRepository).flush();
         verify(authSessionService).saveSession(eq(testUser), eq(newRefreshToken), eq(ip), eq(userAgent));

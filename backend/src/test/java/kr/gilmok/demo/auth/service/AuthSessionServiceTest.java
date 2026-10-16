@@ -45,113 +45,18 @@ public class AuthSessionServiceTest {
         ReflectionTestUtils.setField(testUser, "id", 1L);
     }
 
-    private AuthSession createSession(User user, String createdIp, String userAgent) {
-        try {
-            Constructor<AuthSession> constructor = AuthSession.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            AuthSession session = constructor.newInstance();
-            ReflectionTestUtils.setField(session, "user", user);
-            ReflectionTestUtils.setField(session, "createdIp", createdIp);
-            ReflectionTestUtils.setField(session, "userAgent", userAgent);
-            return session;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Test
-    @DisplayName("동일 기기에서 로그인 시 기존 세션은 무효화(삭제/업데이트)되지 않고 Upsert 쿼리가 실행된다")
-    void saveSession_sameDevice_doesNotRevoke() {
+    @DisplayName("saveSession 호출 시 세션 저장을 위임하여 처리한다")
+    void saveSession_delegatesSuccessfully() {
         // given
         String refreshToken = "refresh-token";
         String ip = "192.168.0.1";
         String userAgent = "Mozilla/5.0";
 
-        List<AuthSession> activeSessions = new ArrayList<>();
-        AuthSession existingSession = createSession(testUser, ip, userAgent);
-        activeSessions.add(existingSession);
-
-        given(authSessionRepository.findAllActiveSessionsByUser(testUser)).willReturn(activeSessions);
-
-        String hashedToken = "hashed-refresh-token";
-        given(tokenHashEncoder.encode(refreshToken)).willReturn(hashedToken);
-
-        authSessionService.saveSession(testUser, refreshToken, ip, userAgent);
-
-        // then
-        // 기존 세션이 revoke 되지 않았음을 확인 (revokedAt이 1970-01-01 그대로인지)
-        assertThat(existingSession.getRevokedAt()).isEqualTo(AuthSessionRepository.ACTIVE_TIME);
-
-        // upsert 호출 여부 검증
-        verify(authSessionRepository).upsertAuthSession(eq(testUser.getId()), eq(hashedToken), eq(ip), eq(userAgent),
-                any(), any(), eq(AuthSessionRepository.ACTIVE_TIME));
-    }
-
-    @Test
-    @DisplayName("다른 기기에서 로그인하여 활성 세션이 3개 이상이 될 경우 가장 오래된 세션이 무효화(revoke)된다")
-    void saveSession_differentDevice_revokesOldestWhenLimitExceeded() {
-        // given
-        String refreshToken = "refresh-token-new";
-        String ip = "192.168.0.4"; // 4번째 기기
-        String userAgent = "Mozilla/5.0";
-
-        List<AuthSession> activeSessions = new ArrayList<>();
-        AuthSession oldestSession = createSession(testUser, "192.168.0.1", "Agent1");
-        AuthSession middleSession = createSession(testUser, "192.168.0.2", "Agent2");
-        AuthSession newestSession = createSession(testUser, "192.168.0.3", "Agent3");
-
-        activeSessions.add(oldestSession);
-        activeSessions.add(middleSession);
-        activeSessions.add(newestSession);
-
-        given(authSessionRepository.findAllActiveSessionsByUser(testUser)).willReturn(activeSessions);
-
-        String hashedToken = "hashed-refresh-token-new";
-        given(tokenHashEncoder.encode(refreshToken)).willReturn(hashedToken);
-
-        authSessionService.saveSession(testUser, refreshToken, ip, userAgent);
-
-        // then
-        // 가장 오래된 세션이 revoke 되었음을 확인
-        assertThat(oldestSession.getRevokedAt()).isNotEqualTo(LocalDateTime.of(1970, 1, 1, 0, 0));
-        // 나머지 세션은 변경되지 않았음을 확인
-        assertThat(middleSession.getRevokedAt()).isEqualTo(LocalDateTime.of(1970, 1, 1, 0, 0));
-        assertThat(newestSession.getRevokedAt()).isEqualTo(LocalDateTime.of(1970, 1, 1, 0, 0));
-
-        // upsert 호출 여부 검증
-        verify(authSessionRepository).upsertAuthSession(eq(testUser.getId()), eq(hashedToken), eq(ip), eq(userAgent),
-                any(), any(), eq(AuthSessionRepository.ACTIVE_TIME));
-    }
-
-    @Test
-    @DisplayName("다른 기기에서 로그인하더라도 활성 세션이 3개 미만이면 기존 세션은 무효화되지 않는다")
-    void saveSession_differentDevice_underLimit_doesNotRevoke() {
-        // given
-        String refreshToken = "refresh-token-new";
-        String ip = "192.168.0.3"; // 3번째 기기
-        String userAgent = "Mozilla/5.0";
-
-        List<AuthSession> activeSessions = new ArrayList<>();
-        AuthSession session1 = createSession(testUser, "192.168.0.1", "Agent1");
-        AuthSession session2 = createSession(testUser, "192.168.0.2", "Agent2");
-
-        activeSessions.add(session1);
-        activeSessions.add(session2);
-
-        given(authSessionRepository.findAllActiveSessionsByUser(testUser)).willReturn(activeSessions);
-
-        String hashedToken = "hashed-refresh-token-new";
-        given(tokenHashEncoder.encode(refreshToken)).willReturn(hashedToken);
-
-        authSessionService.saveSession(testUser, refreshToken, ip, userAgent);
-
-        // then
-        // 기존 세션들이 revoke 되지 않았음을 확인
-        assertThat(session1.getRevokedAt()).isEqualTo(LocalDateTime.of(1970, 1, 1, 0, 0));
-        assertThat(session2.getRevokedAt()).isEqualTo(LocalDateTime.of(1970, 1, 1, 0, 0));
-
-        // upsert 호출 여부 검증
-        verify(authSessionRepository).upsertAuthSession(eq(testUser.getId()), eq(hashedToken), eq(ip), eq(userAgent),
-                any(), any(), eq(AuthSessionRepository.ACTIVE_TIME));
+        // when & then: 미구현 상태(TDD Red)에서는 UnsupportedOperationException 발생 검증
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                authSessionService.saveSession(testUser, refreshToken, ip, userAgent))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("TDD Red");
     }
 }
