@@ -60,6 +60,10 @@ public class AuthSessionServiceTest {
         authSessionService.saveSession(testUser, refreshToken, ip, userAgent);
 
         // then
-        verify(authSessionRepository).save(any(AuthSession.class));
+        verify(authSessionRepository).upsertAuthSession(
+                eq(1L),
+                eq(hashedToken),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class));
     }
 }

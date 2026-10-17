@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record EventResponse(
         Long eventId,
+        Long platformEventId,
         EventStatus status,
         String name,
         String description,
@@ -15,6 +16,7 @@ public record EventResponse(
     public static EventResponse from(Event event) {
         return new EventResponse(
                 event.getId(),
+                event.getPlatformEventId(),
                 event.getStatus(),
                 event.getName(),
                 event.getDescription(),

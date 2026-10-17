@@ -61,7 +61,7 @@ export default function UserEventDetail() {
 
   const handleEnterQueue = () => {
     if (!eventId || event?.status !== 'OPEN') return
-    enterQueue(eventId)
+    enterQueue(String(event.platformEventId ?? eventId))
   }
 
   if (loading) {

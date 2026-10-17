@@ -27,7 +27,14 @@ public class AuthSessionService {
 
     @Transactional
     public void saveSession(User user, String refreshToken, String ip, String userAgent) {
-        createOrUpdateSession(user, refreshToken, ip, userAgent);
+        if (user == null) {
+            throw new IllegalArgumentException("User must not be null");
+        }
+        String hashedRefreshToken = tokenHashEncoder.encode(refreshToken);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = now.plusNanos(refreshExpTime * 1_000_000L);
+        authSessionRepository.upsertAuthSession(user.getId(), hashedRefreshToken, now, expiresAt);
+        log.debug("단일 세션 Upsert 완료 (userId: {}, ip: {})", user.getId(), ip);
     }
 
     @Transactional
