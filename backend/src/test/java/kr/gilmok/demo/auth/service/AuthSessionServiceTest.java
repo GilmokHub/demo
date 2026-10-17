@@ -46,17 +46,20 @@ public class AuthSessionServiceTest {
     }
 
     @Test
-    @DisplayName("saveSession 호출 시 세션 저장을 위임하여 처리한다")
+    @DisplayName("saveSession 호출 시 단일 세션을 생성하거나 갱신하여 저장한다")
     void saveSession_delegatesSuccessfully() {
         // given
         String refreshToken = "refresh-token";
+        String hashedToken = "hashed-refresh-token";
         String ip = "192.168.0.1";
         String userAgent = "Mozilla/5.0";
 
-        // when & then: 미구현 상태(TDD Red)에서는 UnsupportedOperationException 발생 검증
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
-                authSessionService.saveSession(testUser, refreshToken, ip, userAgent))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("TDD Red");
+        given(tokenHashEncoder.encode(refreshToken)).willReturn(hashedToken);
+
+        // when
+        authSessionService.saveSession(testUser, refreshToken, ip, userAgent);
+
+        // then
+        verify(authSessionRepository).save(any(AuthSession.class));
     }
 }

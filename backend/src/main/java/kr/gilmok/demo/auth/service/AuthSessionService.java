@@ -32,6 +32,24 @@ public class AuthSessionService {
 
     @Transactional
     public void createOrUpdateSession(User user, String refreshToken, String ip, String userAgent) {
-        throw new UnsupportedOperationException("TDD Red: Single device session upsert not yet implemented");
+        if (user == null) {
+            throw new IllegalArgumentException("User must not be null");
+        }
+        String hashedRefreshToken = tokenHashEncoder.encode(refreshToken);
+        LocalDateTime expiresAt = LocalDateTime.now().plusNanos(refreshExpTime * 1_000_000L);
+
+        AuthSession session = authSessionRepository.findByUser(user)
+                .map(existing -> {
+                    existing.updateRefreshToken(hashedRefreshToken, expiresAt);
+                    return existing;
+                })
+                .orElseGet(() -> AuthSession.builder()
+                        .user(user)
+                        .refreshTokenHash(hashedRefreshToken)
+                        .expiresAt(expiresAt)
+                        .build());
+
+        authSessionRepository.save(session);
+        log.debug("단일 세션 저장/갱신 완료 (userId: {}, ip: {})", user.getId(), ip);
     }
 }

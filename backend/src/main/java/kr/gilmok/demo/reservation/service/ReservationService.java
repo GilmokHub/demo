@@ -74,10 +74,12 @@ public class ReservationService {
         Reservation saved;
         try {
             // 예약 생성 (HOLDING 상태)
+            int totalPrice = seat.getPrice() * request.quantity();
             Reservation reservation = Reservation.builder()
                     .event(event)
                     .seat(seat).userId(userId).username(username)
                     .quantity(request.quantity())
+                    .totalPrice(totalPrice)
                     .build();
             saved = reservationRepository.save(reservation);
         } catch (Exception e) {
