@@ -35,10 +35,10 @@ export default function EventManagement() {
   const [error, setError] = useState(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [platformEventId, setPlatformEventId] = useState('')
   const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [policyDefaultOpen, setPolicyDefaultOpen] = useState(false)
 
   const loadEvents = async () => {
     setLoading(true)
@@ -62,6 +62,7 @@ export default function EventManagement() {
     e.preventDefault()
     const trimmedName = name.trim()
     const trimmedDesc = description.trim()
+    const trimmedQueueCode = platformEventId.trim()
     if (!trimmedName) return
     const start = startsAt ? new Date(startsAt).toISOString() : new Date().toISOString()
     const end = endsAt ? new Date(endsAt).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -71,12 +72,13 @@ export default function EventManagement() {
       await createEvent({
         name: trimmedName,
         description: trimmedDesc || ' ',
+        platformEventId: trimmedQueueCode || null,
         startsAt: start,
         endsAt: end,
-        policy: {}, // 백엔드 PolicyDefaults 적용
       })
       setName('')
       setDescription('')
+      setPlatformEventId('')
       setStartsAt('')
       setEndsAt('')
       await loadEvents()
@@ -91,7 +93,7 @@ export default function EventManagement() {
     <>
       <h1 className="h3 mb-1 fw-bold">이벤트 관리</h1>
       <p className="text-muted mb-4">
-        운영할 데모 이벤트를 생성하고 목록을 확인하세요. 각 이벤트의 상세 설정 페이지로 이동할 수 있습니다.
+        운영할 데모 이벤트를 생성하고 길목 대기열 키(<code>queue_code</code>)를 연동하세요.
       </p>
 
       {error && (
@@ -106,7 +108,7 @@ export default function EventManagement() {
           <div className="card border rounded-3">
             <div className="card-body">
               <h2 className="h5 fw-semibold mb-1">이벤트 목록</h2>
-              <p className="text-muted small mb-3">현재 생성된 모든 이벤트를 확인하고 관리합니다.</p>
+              <p className="text-muted small mb-3">현재 생성된 모든 이벤트와 연결된 대기열 키를 확인합니다.</p>
               {loading ? (
                 <p className="text-muted mb-0">불러오는 중...</p>
               ) : (
@@ -116,6 +118,7 @@ export default function EventManagement() {
                       <tr>
                         <th>이벤트 ID</th>
                         <th>이름</th>
+                        <th>연결된 대기열 키</th>
                         <th>상태</th>
                         <th>생성일</th>
                         <th className="text-end" style={{ width: 48 }}></th>
@@ -124,7 +127,7 @@ export default function EventManagement() {
                     <tbody>
                       {events.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="text-muted text-center py-4">
+                          <td colSpan={6} className="text-muted text-center py-4">
                             이벤트가 없습니다.
                           </td>
                         </tr>
@@ -133,6 +136,13 @@ export default function EventManagement() {
                           <tr key={evt.eventId}>
                             <td className="fw-medium">{evt.eventId}</td>
                             <td>{evt.name}</td>
+                            <td>
+                              {evt.platformEventId ? (
+                                <code className="text-primary bg-light px-2 py-1 rounded border">{evt.platformEventId}</code>
+                              ) : (
+                                <span className="text-muted small">미연결</span>
+                              )}
+                            </td>
                             <td>
                               <span className={`badge badge-status ${statusClass[evt.status] || 'draft'}`}>
                                 {statusLabel[evt.status] ?? evt.status}
@@ -164,7 +174,7 @@ export default function EventManagement() {
           <div className="card border rounded-3">
             <div className="card-body">
               <h2 className="h5 fw-semibold mb-1">새 이벤트 생성</h2>
-              <p className="text-muted small mb-3">새로운 이벤트를 생성하고 데모 운영을 준비합니다.</p>
+              <p className="text-muted small mb-3">길목 플랫폼에서 발급받은 대기열 키를 입력하여 이벤트를 생성합니다.</p>
               <form onSubmit={handleCreate}>
                 <div className="mb-3">
                   <label htmlFor="event-name" className="form-label">이벤트 이름 <span className="text-danger">*</span></label>
@@ -179,11 +189,25 @@ export default function EventManagement() {
                   />
                 </div>
                 <div className="mb-3">
+                  <label htmlFor="event-queue-code" className="form-label">길목 대기열 키 (Queue Code)</label>
+                  <input
+                    id="event-queue-code"
+                    type="text"
+                    className="form-control font-monospace"
+                    placeholder="예: q_a8f92b1c4d7e0123"
+                    value={platformEventId}
+                    onChange={(e) => setPlatformEventId(e.target.value)}
+                  />
+                  <p className="form-text small text-muted">
+                    플랫폼 콘솔(<code>:3031</code>)에서 발급받은 <code>queue_code</code>를 붙여넣으세요.
+                  </p>
+                </div>
+                <div className="mb-3">
                   <label htmlFor="event-description" className="form-label">이벤트 설명 <span className="text-danger">*</span></label>
                   <textarea
                     id="event-description"
                     className="form-control"
-                    rows={4}
+                    rows={3}
                     placeholder="이벤트에 대한 자세한 설명을 입력하세요."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -210,32 +234,6 @@ export default function EventManagement() {
                     onChange={(e) => setEndsAt(e.target.value)}
                   />
                   <p className="form-text small text-muted">비우면 기본값(현재/7일 후)으로 전송됩니다.</p>
-                </div>
-
-                <div className="mb-3">
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
-                    onClick={() => setPolicyDefaultOpen((o) => !o)}
-                    aria-expanded={policyDefaultOpen}
-                  >
-                    {policyDefaultOpen ? '▼' : '▶'} 기본 정책 (PolicyDefault)
-                  </button>
-                  {policyDefaultOpen && (
-                    <div className="small text-muted border rounded p-3 mt-2 bg-light">
-                      <div className="row g-2">
-                        {Object.entries(POLICY_DEFAULT_LABEL).map(([key, label]) => (
-                          <div
-                            key={key}
-                            className={key === 'blockRules' ? 'col-12' : 'col-6 col-md-4'}
-                          >
-                            {label}: {POLICY_DEFAULT_VALUES[key]}
-                          </div>
-                        ))}
-                      </div>
-                      <p className="mb-0 mt-2 small">이벤트 생성 시 위 기본값이 적용됩니다. 생성 후 정책 설정에서 변경할 수 있습니다.</p>
-                    </div>
-                  )}
                 </div>
 
                 <button type="submit" className="btn btn-primary" disabled={submitting}>

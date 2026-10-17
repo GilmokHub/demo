@@ -32,7 +32,7 @@ public record ReservationResponse(
                 r.getSeat().getSection(),
                 r.getQuantity(),
                 r.getSeat().getPrice(),
-                r.getSeat().getPrice() * r.getQuantity(),
+                r.getTotalPrice() != null ? r.getTotalPrice() : r.getSeat().getPrice() * r.getQuantity(),
                 r.getStatus(),
                 r.getUserId(),
                 r.getUsername(),

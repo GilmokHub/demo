@@ -27,28 +27,36 @@ public class AuthSessionService {
 
     @Transactional
     public void saveSession(User user, String refreshToken, String ip, String userAgent) {
+        if (user == null) {
+            throw new IllegalArgumentException("User must not be null");
+        }
         String hashedRefreshToken = tokenHashEncoder.encode(refreshToken);
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiresAt = now.plusNanos(refreshExpTime * 1_000_000L);
+        authSessionRepository.upsertAuthSession(user.getId(), hashedRefreshToken, now, expiresAt);
+        log.debug("단일 세션 Upsert 완료 (userId: {}, ip: {})", user.getId(), ip);
+    }
 
-        // 1. 현재 활성 세션 개수 체크 (오래된 순 정렬)
-        List<AuthSession> activeSessions = authSessionRepository.findAllActiveSessionsByUser(user);
-
-        // 최적화: 방금 로그인한 기기가 이미 목록에 있다면 Upsert(수정)될 것이므로 개수가 늘어나지 않음.
-        // 다른 기기에서 로그인해서 총 개수가 3개를 초과하게 될 때만 가장 오래된 세션 만료
-        // DDD: Entity 내부 책임을 활용하여 Tell, Don't ask 원칙 준수
-        boolean isSameDeviceExists = activeSessions.stream()
-                .anyMatch(s -> s.isSameDevice(ip, userAgent));
-
-        if (!isSameDeviceExists && activeSessions.size() >= 3) {
-            AuthSession oldest = activeSessions.get(0);
-            oldest.revoke(); // JPA 변경 감지(Dirty Checking)로 UPDATE 쿼리 발생
-            log.info("기기 활성 세션 초과 (3개 이상) - 가장 오래된 세션 무효화 (userId: {}, ip: {})", user.getId(), oldest.getCreatedIp());
+    @Transactional
+    public void createOrUpdateSession(User user, String refreshToken, String ip, String userAgent) {
+        if (user == null) {
+            throw new IllegalArgumentException("User must not be null");
         }
+        String hashedRefreshToken = tokenHashEncoder.encode(refreshToken);
+        LocalDateTime expiresAt = LocalDateTime.now().plusNanos(refreshExpTime * 1_000_000L);
 
-        // 2. Native Query 한 방으로 삽입 또는 갱신 (DB 엔진이 동시성 완벽 제어)
-        authSessionRepository.upsertAuthSession(user.getId(), hashedRefreshToken, ip, userAgent, now, expiresAt,
-                AuthSessionRepository.ACTIVE_TIME);
-        log.debug("세션 저장/갱신 완료 (userId: {}, ip: {})", user.getId(), ip);
+        AuthSession session = authSessionRepository.findByUser(user)
+                .map(existing -> {
+                    existing.updateRefreshToken(hashedRefreshToken, expiresAt);
+                    return existing;
+                })
+                .orElseGet(() -> AuthSession.builder()
+                        .user(user)
+                        .refreshTokenHash(hashedRefreshToken)
+                        .expiresAt(expiresAt)
+                        .build());
+
+        authSessionRepository.save(session);
+        log.debug("단일 세션 저장/갱신 완료 (userId: {}, ip: {})", user.getId(), ip);
     }
 }

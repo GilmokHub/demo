@@ -10,47 +10,33 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 public interface AuthSessionRepository extends JpaRepository<AuthSession, Long> {
 
-    LocalDateTime ACTIVE_TIME = LocalDateTime.of(1970, 1, 1, 0, 0);
-
-    // JPA 기본 쿼리 메서드 (실제 DB와 통신, 파라미터로 LocalDateTime 받음)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<AuthSession> findByRefreshTokenHashAndRevokedAt(String hash, LocalDateTime revokedAt);
+    Optional<AuthSession> findByRefreshTokenHash(String refreshTokenHash);
 
-    List<AuthSession> findAllByUserAndRevokedAtOrderByIssuedAtAsc(User user, LocalDateTime revokedAt);
+    Optional<AuthSession> findByUser(User user);
 
-    // Service에서 호출할 Default 메서드 (상수 자동 주입)
+    Optional<AuthSession> findByUserId(Long userId);
+
     default Optional<AuthSession> findByRefreshTokenHashAndActive(String hash) {
-        return findByRefreshTokenHashAndRevokedAt(hash, ACTIVE_TIME);
+        return findByRefreshTokenHash(hash);
     }
 
-    default List<AuthSession> findAllActiveSessionsByUser(User user) {
-        return findAllByUserAndRevokedAtOrderByIssuedAtAsc(user, ACTIVE_TIME);
-    }
-
-    // Native Query를 이용한 DB 레벨의 Upsert (동시성 완벽 제어)
-    // 참고: `ON DUPLICATE KEY UPDATE`는 MySQL 전용 문법임
-    // 추후 PostgreSQL 등 다른 RDBMS로 마이그레이션 시, 수정이 필요함
     @Modifying
     @Query(value = """
-            INSERT INTO auth_sessions (user_id, refresh_token_hash, created_ip, user_agent, issued_at, last_used_at, expires_at, revoked_at)
-            VALUES (:userId, :tokenHash, :ip, :userAgent, :now, :now, :expiresAt, :revokedAt)
+            INSERT INTO auth_sessions (user_id, refresh_token_hash, created_at, expires_at, updated_at)
+            VALUES (:userId, :tokenHash, :now, :expiresAt, :now)
             ON DUPLICATE KEY UPDATE
                 refresh_token_hash = VALUES(refresh_token_hash),
-                issued_at = VALUES(issued_at),
-                last_used_at = VALUES(last_used_at),
-                expires_at = VALUES(expires_at)
+                expires_at = VALUES(expires_at),
+                updated_at = VALUES(updated_at)
             """, nativeQuery = true)
     void upsertAuthSession(
             @Param("userId") Long userId,
             @Param("tokenHash") String tokenHash,
-            @Param("ip") String ip,
-            @Param("userAgent") String userAgent,
             @Param("now") LocalDateTime now,
-            @Param("expiresAt") LocalDateTime expiresAt,
-            @Param("revokedAt") LocalDateTime revokedAt);
+            @Param("expiresAt") LocalDateTime expiresAt);
 }

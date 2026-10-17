@@ -2,17 +2,22 @@ package kr.gilmok.demo.seat.entity;
 
 import jakarta.persistence.*;
 import kr.gilmok.demo.event.entity.Event;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "seats")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Seat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "seat_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -22,16 +27,19 @@ public class Seat {
     @Column(nullable = false, length = 10)
     private String section;
 
-    @Column(nullable = false)
+    @Column(name = "total_count", nullable = false)
     private int totalCount;
 
-    @Column(nullable = false)
+    @Column(name = "reserved_count", nullable = false)
     private int reservedCount;
 
     @Column(nullable = false)
     private int price;
 
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Builder
