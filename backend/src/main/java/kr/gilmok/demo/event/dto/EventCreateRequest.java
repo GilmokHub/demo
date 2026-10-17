@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public record EventCreateRequest(
         @NotBlank String name,
         @NotBlank String description,
+        String platformEventId,
         @NotNull LocalDateTime startsAt,
         @NotNull LocalDateTime endsAt
 ) {

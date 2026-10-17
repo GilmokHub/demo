@@ -23,9 +23,13 @@ public class EventService {
 
     @Transactional
     public EventResponse createEvent(EventCreateRequest dto) {
+        String platformEventId = (dto.platformEventId() != null && !dto.platformEventId().isBlank())
+                ? dto.platformEventId().trim()
+                : null;
         Event event = Event.builder()
                 .name(dto.name())
                 .description(dto.description())
+                .platformEventId(platformEventId)
                 .startsAt(dto.startsAt())
                 .endsAt(dto.endsAt())
                 .build();

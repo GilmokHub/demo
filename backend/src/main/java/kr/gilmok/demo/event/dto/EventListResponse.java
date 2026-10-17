@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public record EventListResponse(
         Long eventId,
-        Long platformEventId,
+        String platformEventId,
         String name,
         String description,
         EventStatus status,

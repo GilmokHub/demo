@@ -41,12 +41,12 @@ public class Event {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "platform_event_id")
-    private Long platformEventId;
+    @Column(name = "platform_event_id", length = 50)
+    private String platformEventId;
 
     @Builder
     public Event(String name, String description, LocalDateTime startsAt,
-                 LocalDateTime endsAt, Long platformEventId) {
+                 LocalDateTime endsAt, String platformEventId) {
         this.name = name;
         this.description = description;
         this.startsAt = startsAt;
@@ -71,7 +71,7 @@ public class Event {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updatePlatformEventId(Long platformEventId) {
+    public void updatePlatformEventId(String platformEventId) {
         this.platformEventId = platformEventId;
         this.updatedAt = LocalDateTime.now();
     }

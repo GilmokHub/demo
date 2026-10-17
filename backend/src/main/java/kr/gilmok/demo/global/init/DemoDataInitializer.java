@@ -48,7 +48,7 @@ public class DemoDataInitializer implements ApplicationRunner {
                     .description("2026 아이유 월드투어 서울 단독 콘서트")
                     .startsAt(LocalDateTime.now().minusDays(1))
                     .endsAt(LocalDateTime.now().plusDays(30))
-                    .platformEventId(1L)
+                    .platformEventId("DEMO-CONCERT-2026")
                     .build();
             event.open();
             Event savedEvent = eventRepository.save(event);

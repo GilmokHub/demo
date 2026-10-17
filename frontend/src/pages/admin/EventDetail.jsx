@@ -101,7 +101,11 @@ export default function EventDetail() {
           <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
             <div>
               <h2 className="h4 mb-2">{ev.name}</h2>
-              <p className="text-muted small mb-1">이벤트 ID: {ev.eventId}</p>
+              <p className="text-muted small mb-1">
+                이벤트 ID: {ev.eventId}
+                <span className="mx-2">|</span>
+                연결된 대기열 키: {ev.platformEventId ? <code className="text-primary">{ev.platformEventId}</code> : '미연결'}
+              </p>
               <p className="mb-2">{ev.description}</p>
               <p className="text-muted small mb-0">생성일: {toDateStr(ev.createdAt)}</p>
             </div>
