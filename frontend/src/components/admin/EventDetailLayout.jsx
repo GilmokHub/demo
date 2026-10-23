@@ -47,10 +47,10 @@ export default function EventDetailLayout() {
         </div>
         <div className="d-flex align-items-center gap-2">
           <a
-            href={`http://localhost:3031/events/${eventId}/policy`}
+            href={`${import.meta.env.VITE_PLATFORM_CONSOLE_URL}/events/${eventId}/policy`}
             className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
           >
-            <span>🚦 대기열/정책 관리 (3031)</span>
+            <span>🚦 대기열/정책 관리</span>
             <span className="small">→</span>
           </a>
           {currentMenuLabel && (

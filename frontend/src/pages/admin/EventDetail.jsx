@@ -164,11 +164,11 @@ export default function EventDetail() {
           <div>
             <h3 className="h6 fw-bold text-primary mb-1">🚦 길목 대기열 플랫폼 콘솔 연동</h3>
             <p className="small text-muted mb-0">
-              실시간 트래픽 모니터링, 동적 RPS 정책 설정, AI 부하 분석 및 추천 기능은 대기열 플랫폼 콘솔(포트 3031)에서 관리합니다.
+              실시간 트래픽 모니터링, 동적 RPS 정책 설정, AI 부하 분석 및 추천 기능은 대기열 플랫폼 콘솔에서 관리합니다.
             </p>
           </div>
           <a
-            href={`http://localhost:3031/events/${eventId}/policy`}
+            href={`${import.meta.env.VITE_PLATFORM_CONSOLE_URL}/events/${eventId}/policy`}
             className="btn btn-primary btn-sm d-flex align-items-center gap-1 text-nowrap"
           >
             <span>대기열/정책 콘솔 이동</span>

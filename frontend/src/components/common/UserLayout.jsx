@@ -71,10 +71,10 @@ export default function UserLayout() {
                                                 관리자 페이지
                                             </NavLink>
                                             <a
-                                                href="http://localhost:3031"
+                                                href={import.meta.env.VITE_PLATFORM_CONSOLE_URL}
                                                 className="btn btn-primary btn-sm d-flex align-items-center gap-1"
                                             >
-                                                <span>대기열 콘솔 (3031)</span>
+                                                <span>대기열 콘솔</span>
                                                 <span className="small">→</span>
                                             </a>
                                         </>

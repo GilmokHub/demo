@@ -11,10 +11,10 @@ export default function Layout() {
           </Link>
           <div className="ms-auto d-flex align-items-center gap-2">
             <a
-              href="http://localhost:3031"
+              href={import.meta.env.VITE_PLATFORM_CONSOLE_URL}
               className="btn btn-primary btn-sm d-flex align-items-center gap-1"
             >
-              <span>🚦 길목 대기열 콘솔 (3031)</span>
+              <span>🚦 길목 대기열 콘솔</span>
               <span className="small">→</span>
             </a>
             <Link to="/" className="btn btn-outline-secondary btn-sm">
