@@ -29,6 +29,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup .npmrc for GitHub Packages
+        run: |
+          echo "@gilmokhub:registry=https://npm.pkg.github.com" > frontend/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> frontend/.npmrc
+
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
         with:
