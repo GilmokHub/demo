@@ -38,3 +38,7 @@ out/
 
 ### yml ###
 application-dev.yml
+
+### AI Agent & Documentation ###
+.agents
+docs/
