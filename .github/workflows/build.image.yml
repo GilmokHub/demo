@@ -1,21 +1,13 @@
-name: Build & Push to GHCR
+name: Build & Push Demo Backend to GHCR
 
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'frontend/**'
+      - 'README.md'
   workflow_dispatch:
-    inputs:
-      target:
-        description: 'Deploy target (all, oci or aws)'
-        required: false
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - oci
-          - aws
 
-# GHCR에 이미지를 올리려면 쓰기 권한(packages: write)이 필요함
 permissions:
   contents: read
   packages: write
@@ -27,11 +19,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # 1. 소스 가져오기
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      # 2. JDK 설정 + 캐싱
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -39,13 +29,11 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      # 3. 빌드 (테스트 제외)
       - name: Build with Gradle
         run: |
           chmod +x gradlew
           ./gradlew clean build -x test
 
-      # 4. GHCR 로그인
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -53,9 +41,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 5. 백엔드 이미지 빌드 & 푸시
-      - name: Build and Push
-        id: build_push
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -63,22 +49,10 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:latest
 
-      # 6. 배포 타깃 설정
-      - name: Set Deploy Target
-        id: set-target
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "DEPLOY_TARGET=${{ inputs.target }}" >> $GITHUB_ENV
-          else
-            echo "DEPLOY_TARGET=oci" >> $GITHUB_ENV
-          fi
-
-      # 7. 배포 레포지토리 트리거
       - name: Trigger Deploy Repo
-        if: ${{ !cancelled() && steps.build_push.outcome == 'success' }}
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITOPS_TOKEN }}
           repository: GilmokHub/deploy
           event-type: update-image
-          client-payload: '{"image_tag": "latest", "image_url": "${{ env.IMAGE_NAME }}", "service_name": "demo-backend", "target": "${{ env.DEPLOY_TARGET }}"}'
+          client-payload: '{"image_tag": "latest", "image_url": "${{ env.IMAGE_NAME }}", "service_name": "demo-backend", "target": "oci"}'

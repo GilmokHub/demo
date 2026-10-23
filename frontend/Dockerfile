@@ -1,12 +1,13 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY package*.json .npmrc* ./
 RUN npm ci
 COPY . .
 
 # ✅ COPY . . 이후, RUN npm run build 이전에 선언해야 함
 ARG VITE_API_BASE_URL
 ARG VITE_AUTH_BASE_URL
+ARG VITE_QUEUE_SERVER_URL
 
 RUN npm run build
 

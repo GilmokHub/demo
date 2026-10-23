@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getOpenEvents } from '../../api/events'
-import { useGilmokQueue, GilmokWaitingModal } from '@gilmok/sdk'
+import { useGilmokQueue, GilmokWaitingModal } from '@gilmokhub/sdk'
 
 function formatPeriod(startsAt, endsAt) {
   if (!startsAt && !endsAt) return null
@@ -22,6 +22,7 @@ export default function UserEventDetail() {
   // 길목 대기열 SDK 연동
   const { isWaiting, queueStatus, enterQueue } = useGilmokQueue({
     clientKey: 'demo-client',
+    queueUrl: import.meta.env.VITE_QUEUE_SERVER_URL || 'http://localhost:8082',
     onAdmitted: ({ admissionToken }) => {
       // 평상시(0초) 또는 대기열 순번 완료 시 좌석 선택 페이지로 이동
       navigate(`/events/${eventId}/seats`, { state: { admissionToken } })
