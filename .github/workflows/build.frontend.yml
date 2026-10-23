@@ -13,7 +13,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/demo-frontend
+  IMAGE_NAME: ghcr.io/gilmokhub/demo-frontend
 
 jobs:
   build-and-push:
