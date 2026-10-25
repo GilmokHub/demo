@@ -8,16 +8,16 @@ export default defineConfig(({ mode }) => {
         if (req.headers.accept?.includes('text/html')) return '/index.html'
     }
 
-    // 고객사(demo) 백엔드 - 포트 8081 (context-path: /gilmok-demo)
+    // 고객사(demo) 백엔드 로컬 프록시 (포트 8081, context-path: /gilmok-demo)
     const backendProxy = {
-        target: env.VITE_API_BASE_URL || 'http://localhost:8081',
+        target: env.VITE_BACKEND_PROXY_TARGET,
         changeOrigin: true,
         bypass: bypassHtml,
     }
 
-    // 플랫폼(platform) 대기열 백엔드 - 포트 8082 (context-path: /gilmok-platform)
+    // 플랫폼(platform) 대기열 백엔드 로컬 프록시 (포트 8082, context-path: /gilmok-platform)
     const queueProxy = {
-        target: env.VITE_QUEUE_SERVER_URL || 'http://localhost:8082',
+        target: env.VITE_QUEUE_PROXY_TARGET,
         changeOrigin: true,
         bypass: bypassHtml,
     }

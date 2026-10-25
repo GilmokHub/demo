@@ -1,5 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/gilmok-demo'
-const AUTH_BASE = import.meta.env.VITE_AUTH_BASE_URL || '/gilmok-demo'
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+const AUTH_BASE = import.meta.env.VITE_AUTH_BASE_URL
 
 /**
  * 토큰 재발급(Refresh) 관련 상태 관리
