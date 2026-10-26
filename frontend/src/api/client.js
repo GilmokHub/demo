@@ -1,5 +1,4 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL
-const AUTH_BASE = import.meta.env.VITE_AUTH_BASE_URL
 
 /**
  * 토큰 재발급(Refresh) 관련 상태 관리
@@ -93,7 +92,7 @@ async function request(baseUrl, path, options = {}) {
 
             try {
                 // 서버에 토큰 재발급 요청 (credentials: 'include'로 쿠키 자동 전송)
-                const reissueRes = await fetch(`${AUTH_BASE}/auth/reissue`, {
+                const reissueRes = await fetch(`${API_BASE}/auth/reissue`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -155,7 +154,7 @@ export const api = {
  * 인증 전용 API 클라이언트
  */
 export const authApi = {
-    post: (path, body, opts) => request(AUTH_BASE, path, {
+    post: (path, body, opts) => request(API_BASE, path, {
         method: 'POST',
         body: body !== undefined ? JSON.stringify(body) : undefined,
         ...opts
