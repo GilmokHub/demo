@@ -15,20 +15,12 @@ export default defineConfig(({ mode }) => {
         bypass: bypassHtml,
     }
 
-    // 플랫폼(platform) 대기열 백엔드 로컬 프록시 (포트 8082, context-path: /gilmok-platform)
-    const queueProxy = {
-        target: env.VITE_QUEUE_PROXY_TARGET,
-        changeOrigin: true,
-        bypass: bypassHtml,
-    }
-
     return {
         plugins: [react()],
         server: {
             port: 3030,
             proxy: {
                 '/gilmok-demo': backendProxy,
-                '/gilmok-platform': queueProxy,
             },
         },
     }
